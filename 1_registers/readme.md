@@ -34,5 +34,5 @@ selected_pin_state = full_gpio_register_value & pin_21_selection_mask;
 shifted_pin_21_state = selected_pin_state >> 21;
 ```
 
-## flashlight
+## Flashlight
 ![](https://github.com/SEN316/ese519-lab2B-part1-10/blob/main/1_registers/part1.gif)
