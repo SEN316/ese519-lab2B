@@ -6,7 +6,7 @@ Toggle the Qt Py's Neopixel LED when the BOOT button is pressed, using only dire
 
 In neopixel.c, we initialize PIN and POWER_PIN 
 
-'''
+```
 #define PIN         12
 #define POWER_PIN   11
-'''
+```
