@@ -57,7 +57,7 @@ int main() {
                 status.light_color = 0x00ffffff;
                 break;
         }
-        //if (gpio_get(QTPY_BOOT_PIN)) { // poll every cycle, 0 = "pressed"
+        
         boot_pin_address = (volatile uint32_t *) 0xd0000004;
         full_gpio_register_value = (uint32_t) *boot_pin_address;
         pin_21_selection_mask = 1u << 21;
