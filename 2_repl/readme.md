@@ -9,4 +9,4 @@ Create a REPL to let you read and write RP2040 registers from a console. You sho
 
 ## Result
 The result is shown below.
-![]()
+![](https://github.com/SEN316/ese519-lab2B-part1-10/blob/main/2_repl/part2_1.png)
