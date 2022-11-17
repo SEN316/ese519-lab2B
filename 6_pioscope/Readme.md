@@ -6,5 +6,5 @@
 - record a trace of this exchange
 
 ## Result
-![]()
+![](https://github.com/SEN316/ese519-lab2B-part1-10/blob/main/6_pioscope/part6_a.jpg)
 ![]()
