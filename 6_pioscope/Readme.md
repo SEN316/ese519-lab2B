@@ -5,3 +5,6 @@
 - with a partner, connect a second Qt Py to the Stemma Qt bus of an ADPS9960 that's attached to a first Qt Py running the Lab 1 Python code
 - record a trace of this exchange
 
+## Result
+![]()
+![]()
