@@ -8,5 +8,5 @@ Create a REPL to let you read and write RP2040 registers from a console. You sho
 
 
 ## Result
-This part of code is based on code from part 1. I attach the code in the folder. The result is shown below.
+The result is shown below.
 ![]()
