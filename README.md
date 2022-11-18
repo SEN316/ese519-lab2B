@@ -13,4 +13,5 @@ Programming the PIO is most difficult to understand. It takes me a lot of time t
 NA
 
 - What steps have you taken to resolve these difficulties? Any other barriers you have faced to completing this assignment? Mention any students, repos, or other resources you have found helpful in completing the lab so far.
+
 Most of time, I will open github to see my classmate repos which is helpful for me to solve my confusion. 
