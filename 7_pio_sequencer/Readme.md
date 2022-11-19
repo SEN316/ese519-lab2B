@@ -4,4 +4,4 @@
 
 
 ## Result
-![]()
+![](https://github.com/SEN316/ese519-lab2B-part1-10/blob/main/7_pio_sequencer/part7.gif)
