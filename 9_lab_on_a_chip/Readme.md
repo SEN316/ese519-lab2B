@@ -11,4 +11,4 @@ Run this experiment in both dark and light room settings (record initial ambient
 Report the observed 'jitter' based on misalignment with the free-running PWM module on the WS2012.
 
 ## Result
-![]()
+![](https://github.com/SEN316/ese519-lab2B-part1-10/blob/main/9_lab_on_a_chip/part9.gif)
