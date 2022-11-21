@@ -35,6 +35,7 @@ void core1_main() {
     uint32_t r, g, b, c;
     PIO pio_i2c = pio1;
     uint sm = 0;
+    const int address = 0x39;
     while(true){
         read_proximity(pio_i2c, sm, &proximity, address, true);
         read_rgbc(pio_i2c, sm, &r, &g, &b, &c);
