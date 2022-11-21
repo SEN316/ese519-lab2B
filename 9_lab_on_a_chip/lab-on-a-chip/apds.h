@@ -1,4 +1,3 @@
-
 #ifndef APDS_H
 #define APDS_H
 
@@ -37,7 +36,7 @@
 #include "pio_i2c.h"
 
 void init_sensor(PIO pio, uint sm);
-void proximity_sensor(int32_t *proximity, PIO pio, uint sm, uint32_t addr, bool continue_do);
+void read_proximity(PIO pio, uint sm, uint32_t* proximity, uint32_t addr, bool continue_do);
 void read_rgbc(PIO pio, uint sm, int32_t* r, int32_t* g, int32_t* b, int32_t* c);
 
 
