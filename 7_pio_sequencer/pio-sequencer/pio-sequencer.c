@@ -95,8 +95,11 @@ int main() {
     uint sm = 0;
     uint dma_chan = 0;
     
-    uint32_t last_serial_byte;
-    uint32_t light_color = 0x00ff0000;
+    uint32_t last_serial_byte =  0x00000000;
+    uint32_t light_color =       0x00ff0000;
+    int i = 0;
+    int j = 0;
+    uint32_t arr[1000];
     uint offset = pio_add_program(pio, &ws2812_program);
     ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
 
