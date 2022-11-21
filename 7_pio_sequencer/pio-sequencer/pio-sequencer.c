@@ -10,16 +10,16 @@
 #include "hardware/structs/pwm.h"
 #include "registers.h"
 #include "neopixel.h"
+
 const uint CAPTURE_PIN_BASE = 22;
 const uint CAPTURE_PIN_COUNT = 2;
 const uint CAPTURE_N_SAMPLES = 96;
 const uint BOOT_PIN = 21;
+uint32_t button_is_pressed;
 
 #define WS2812_PIN 12
 #define WS2812_POWER_PIN 11
 #define IS_RGBW true
-
-uint32_t button_is_pressed;
 
 static inline uint bits_packed_per_word(uint pin_count) {
     const uint SHIFT_REG_WIDTH = 32;
@@ -34,7 +34,9 @@ void logic_analyser_init(PIO pio, uint sm, uint pin_base, uint pin_count, float 
             .origin = -1
     };
     uint offset = pio_add_program(pio, &capture_prog);
-
+    
+    // Configure state machine to loop over this `in` instruction forever,
+    // with autopush enabled.
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_in_pins(&c, pin_base);
     sm_config_set_wrap(&c, offset, offset);
@@ -92,8 +94,9 @@ int main() {
     PIO pio = pio0;
     uint sm = 0;
     uint dma_chan = 0;
+    
     uint32_t last_serial_byte;
-    uint32_t light_color;
+    uint32_t light_color = 0x00ff0000;
     uint offset = pio_add_program(pio, &ws2812_program);
     ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
 
@@ -101,53 +104,67 @@ int main() {
     gpio_set_dir(WS2812_POWER_PIN, GPIO_OUT);
     gpio_put(WS2812_POWER_PIN, 1);
 
-    
+    // We're going to capture into a u32 buffer, for best DMA efficiency. Need
+    // to be careful of rounding in case the number of pins being sampled
+    // isn't a power of 2.
     uint total_sample_bits = CAPTURE_N_SAMPLES * CAPTURE_PIN_COUNT;
     total_sample_bits += bits_packed_per_word(CAPTURE_PIN_COUNT) - 1;
     uint buf_size_words = total_sample_bits / bits_packed_per_word(CAPTURE_PIN_COUNT);
     uint32_t *capture_buf = malloc(buf_size_words * sizeof(uint32_t));
     hard_assert(capture_buf);
+    
+    // Grant high bus priority to the DMA, so it can shove the processors out
+    // of the way. This should only be needed if you are pushing things up to
+    // >16bits/clk here, i.e. if you need to saturate the bus completely.
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
     
-    PIO pio_1 = pio1;
+    PIO pio_1 = pio1;               // logic analyser  
+     
     logic_analyser_init(pio_1, sm, CAPTURE_PIN_BASE, CAPTURE_PIN_COUNT, 256.f);
     while (true) {
         last_serial_byte = getchar_timeout_us(0); // don't block main loop
         if (last_serial_byte == 'r'){
-            while(true){
-                last_serial_byte = getchar_timeout_us(0);
-                if (last_serial_byte == 's'){
-                    printf("finished");
-                    break;
+            while (true){
+                while(i < 1000){
+                    last_serial_byte = getchar_timeout_us(0);
+                    logic_analyser_arm(pio_1, sm, dma_chan, capture_buf, buf_size_words, CAPTURE_PIN_BASE, false);
+                    print_capture_buf(capture_buf, CAPTURE_PIN_BASE, CAPTURE_PIN_COUNT, CAPTURE_N_SAMPLES);
+                    
+                    if (button_is_pressed){
+                        printf("1\n"); 
+                        arr[i] =  0x00000000;  
+                        neopixel_set_rgb(light_color);
+                    } 
+                    else {
+                        printf("0\n");
+                        arr[i] = 0x00000001;
+                        neopixel_set_rgb(0x00000000);
+                    }
+                    sleep_ms(30); // don't DDOS the serial console
+                    i += 1;
                 }
-                logic_analyser_arm(pio_1, sm, dma_chan, capture_buf, buf_size_words, CAPTURE_PIN_BASE, false);
-                print_capture_buf(capture_buf, CAPTURE_PIN_BASE, CAPTURE_PIN_COUNT, CAPTURE_N_SAMPLES);
-                if (button_is_pressed){
-                    printf("1\n");    
-                    neopixel_set_rgb(0x00ff0000);
-                } 
-                else {
-                    printf("0\n");
-                    neopixel_set_rgb(0x00000000);
-                }
-                sleep_ms(50); // don't DDOS the serial console
+                break;
             }
-        
         }
+
         if (last_serial_byte == 'w'){
-            printf("OK\n");
+            printf("Start Replay!\n");
             while(true){
-            last_serial_byte = getchar_timeout_us(0);
-            if (last_serial_byte == '1'){
-                neopixel_set_rgb(0x00ff0000);
-                sleep_ms(50);
-            }
-            else{
-                neopixel_set_rgb(0x00000000);
-                sleep_ms(50);
-            }
-            //sleep_ms(10);
-            }
+                while(j < 1000){
+                last_serial_byte = getchar_timeout_us(0);
+                if (arr[j]){
+                    neopixel_set_rgb(light_color);
+                    sleep_ms(30);
+                    }
+                else{
+                    neopixel_set_rgb(0x00000000);
+                    sleep_ms(30);
+                    }
+                j += 1;
+                }
+                j = 0;
+                
+            }   
         }
     }
     
