@@ -16,10 +16,18 @@
 const uint CAPTURE_PIN_BASE = 12;
 const uint CAPTURE_PIN_COUNT = 1;
 const uint CAPTURE_N_SAMPLES = 350000;
-const uint TRIGGER_PIN = 21;
+const uint BOOT_PIN = 21;
 const int address = 0x39;
 #define PIN_SDA 22
 #define PIN_SCL 23
+
+uint32_t rgb_to_neopixel(uint8_t r, uint8_t g, uint8_t b){
+    uint32_t result = 0;
+    result |= (uint32_t)r << 16u;
+    result |= (uint32_t)g << 8u;
+    result |= (uint32_t)b;
+    return result;
+}
 
 //core 1 is set to keep fetching data from APDS9960
 void core1_main() {
@@ -30,9 +38,7 @@ void core1_main() {
     while(true){
         read_proximity(pio_i2c, sm, &proximity, address, true);
         read_rgbc(pio_i2c, sm, &r, &g, &b, &c);
-        //printf("proximity: %d   ",proximity);
-        //printf("r:%d, g:%d, b:%d, c:%d\n", r, g, b, c);
-        neopixel_set_rgb((r << 16u | g << 8u | b));
+        neopixel_set_rgb(rgb_to_neopixel(r, g, b));
         sleep_ms(5);
     }
 }
@@ -60,13 +66,12 @@ int main() {
     uint sm = 0;
     uint dma_chan = 0;
 
-    //-------------------------initialization--------------------------
-
+    //initialization
     logic_analyser_init(pio, sm, CAPTURE_PIN_BASE, CAPTURE_PIN_COUNT, 125000000 / (4 * 400 * 8 * 1000));// double freq of i2c rate. 400kbits/s => 800*8kHz
 
-    gpio_init(TRIGGER_PIN);
-    gpio_set_dir(TRIGGER_PIN, GPIO_IN);
-    sleep_ms(5000);
+    gpio_init(BOOT_PIN);
+    gpio_set_dir(BOOT_PIN, GPIO_IN);
+    sleep_ms(1000);
 
     // initialize PIO.I2C and APDS9960
     uint offset = pio_add_program(pio_i2c, &i2c_program);
@@ -76,20 +81,18 @@ int main() {
     neopixel_init();
     
     multicore_launch_core1(core1_main); //keep fetching data from APDS9960 through core1.
-
-    //-------------------------initialization--------------------------
-
+    
     while(true){   
         printf("press boot button to arming trigger\n");
 
-        do{} while (gpio_get(TRIGGER_PIN) == 1);
+        do{} while (gpio_get(BOOT_PIN) == 1);
 
-        logic_analyser_arm(pio, sm, dma_chan, capture_buf, buf_size_words, TRIGGER_PIN, false);
+        logic_analyser_arm(pio, sm, dma_chan, capture_buf, buf_size_words, BOOT_PIN, false);
 
         printf("Start recording\n");
         
         dma_channel_wait_for_finish_blocking(dma_chan);
-        printf("Recording done!\n");
+        printf("Done!\n");
 
         print_capture_buf(capture_buf, CAPTURE_PIN_BASE, CAPTURE_PIN_COUNT, CAPTURE_N_SAMPLES);
 
