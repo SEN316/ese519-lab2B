@@ -35,7 +35,7 @@ void init_sensor(PIO pio, uint sm){
     pio_i2c_write_blocking(pio, sm, addr, buf, 2, false);
 }
 
-void read_proximity(PIO pio, uint sm, int32_t* proximity, uint32_t addr, bool continue_do) {
+void proximity_sensor(PIO pio, uint sm, int32_t* proximity, uint32_t addr, bool continue_do) {
 
     uint8_t buf[1];
     uint8_t reg = PDATA_REG;
