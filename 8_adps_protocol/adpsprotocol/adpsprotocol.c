@@ -23,10 +23,7 @@ int main(){
     init_sensor();
     
     while(true){
-        int32_t c;
-        int32_t r;
-        int32_t g;
-        int32_t b;
+        int32_t c, r, g, b;
         int32_t proximity;
         proximity_sensor(&proximity, pio, sm, address, true);
         read_rgbc(&r, &g, &b, &c);
